@@ -117,7 +117,7 @@ HashSet<Block> ghosts;
 Block pacman;
 int score = 0;
 int lives = 3;
-
+boolean gameOver = false;
 
 
 Timer gameLoop;
@@ -148,6 +148,11 @@ Random random = new Random();
             char newDirection = directions [random.nextInt(4)];
             ghost.updateDirection(newDirection);
         }
+        //how long it takes to start the timer, Milliseconds gone between frames
+        gameLoop = new Timer(50 , this);//20fps (1000 secs/50frames)
+        gameLoop.start();
+
+
     }
 
        public void loadMap() {
@@ -212,6 +217,13 @@ Random random = new Random();
             g.fillRect(food.x, food.y, food.width, food.height);
         }
         //Score
+        g.setFont(new Font("Arial", Font.PLAIN,18));
+        if (gameOver) {
+            g.drawString("Game Over: "+ String.valueOf(score),tileSize/2,tileSize/2);
+        }
+        else {
+            g.drawString("x" + String.valueOf (lives) + "Score: " + String.valueOf(score),tileSize/2,tileSize/2);
+        }
     }
 
     public void move() {
@@ -231,6 +243,7 @@ Random random = new Random();
             if (collision(ghost, pacman)) {
                 lives -= 1;
                 if (lives == 0) {
+                    gameOver = true;
                     return;
                 }
                 resetPositions();
@@ -283,7 +296,11 @@ Random random = new Random();
     }
     @Override
     public void actionPerformed (ActionEvent e) {
-
+        move();
+        repaint();
+        if (gameOver) {
+            gameLoop.stop();
+        }
     }
 
     @Override
@@ -294,6 +311,14 @@ Random random = new Random();
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (gameOver) {
+            loadMap();
+            resetPositions();
+            lives = 3;
+            score = 0;
+            gameOver = false;
+            gameLoop.start();
+        }
         //System.out.println("KeyEvent: " + e.getKeyCode());
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             pacman.updateDirection('U');
