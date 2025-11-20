@@ -29,13 +29,23 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             this.startY = y;
         }
     }
-    private int rowCount = 21 ;
-    private int columnCount = 19 ;
-    private int tileSize = 32;
-    private int boardWidth = columnCount * tileSize;
-    private int boardHeight = rowCount * tileSize;
+           private int rowCount = 21 ;
+       private int columnCount = 19 ;
+       private int tileSize = 32;
+       private int boardWidth = columnCount * tileSize;
+       private int boardHeight = rowCount * tileSize;
 
-    //X = wall, O = skip, P = pac man, ' ' = food
+       private Image wallImage;
+       private Image blueGhostImage;
+       private Image orangeGhostImage;
+       private Image pinkGhostImage;
+       private Image redGhostImage;
+
+       private Image pacmanUpImage;
+       private Image pacmanDownImage;
+       private Image pacmanLeftImage;
+       private Image pacmanRightImage;
+//X = wall, O = skip, P = pac man, ' ' = food
     //Ghosts: b = blue, o = orange, p = pink, r = red
     private String[] tileMap = {
         "XXXXXXXXXXXXXXXXXXX",
@@ -60,20 +70,41 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         "X                 X",
         "XXXXXXXXXXXXXXXXXXX" 
     };
-    HashSet<Block> walls;
-    HashSet<Block> foods;
-    HashSet<Block> ghosts;
-    Block pacman;
-    PacMan() {
+
+HashSet<Block> walls;
+HashSet<Block> foods;
+HashSet<Block> ghosts;
+Block pacman;
+
+Timer gameLoop;
+char[] directions = {'U','D','L','R'};
+Random random = new Random();
+
+       PacMan() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
         addKeyListener(this);
         setFocusable(true);
-    }
-    public void loadMap() {
-    walls = new HashSet<Block>();
-    foods = new HashSet<Block>();
-    ghosts = new HashSet<Block>();
+
+        //Load Image
+
+        wallImage = new ImageIcon(getClass().getResource("./wall.png")).getImage();
+        blueGhostImage = new ImageIcon(getClass().getResource("./blueGhost.png")).getImage();
+        orangeGhostImage = new ImageIcon(getClass().getResource("./orangeGhost.png")).getImage();
+        pinkGhostImage = new ImageIcon(getClass().getResource("./pinkGhost.png")).getImage();
+        redGhostImage = new ImageIcon(getClass().getResource("./redGhost.png")).getImage();
+
+        pacmanUpImage = new ImageIcon(getClass().getResource("./pacmanUp.png")).getImage();
+        pacmanDownImage = new ImageIcon(getClass().getResource("./pacmanDown.png")).getImage();
+        pacmanLeftImage = new ImageIcon(getClass().getResource("./pacmanLeft.png")).getImage();
+        pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
+
+        loadMap();
+       }
+       public void loadMap() {
+        walls = new HashSet<Block>();
+        foods = new HashSet<Block>();
+        ghosts = new HashSet<Block>();
 
         for (int r = 0; r < rowCount; r++) {
          String row = tileMap[r];            // get row once per r
@@ -114,8 +145,13 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }
         }
     }
+    public void move() {
+        pacman.x += pacman.velocityX;
+        pacman.y += pacman.velocityY;
+    }
     @Override
     public void actionPerformed (ActionEvent e) {}
+
     @Override
     public void keyTyped(KeyEvent e) {}
 
@@ -123,5 +159,18 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {}
 
     @Override
-    public void keyReleased(KeyEvent e) {}
-}
+    public void keyReleased(KeyEvent e) {
+        if(pacman.direction == 'U') {
+            pacman.image = pacmanUpImage;
+        }
+        else if(pacman.direction == 'D') {
+            pacman.image = pacmanDownImage;
+        }
+        else if(pacman.direction == 'L') {
+            pacman.image = pacmanLeftImage;
+        }
+        else if(pacman.direction == 'R') {
+            pacman.image = pacmanRightImage;
+        }
+    }
+}    
