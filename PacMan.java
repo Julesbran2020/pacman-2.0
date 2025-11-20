@@ -28,8 +28,40 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             this.startX = x;
             this.startY = y;
         }
+
+        void updateDirection(char direction) {
+            char prevDirection = this.direction;
+            this.direction = direction;
+            updateVelocity();
+            this.x += this.velocityX;
+            this.y += this.velocityY;
+        }
+        void updateVelocity() {
+            if (this.direction == 'U') {
+                this.velocityX = 0;
+                this.velocityY = -tileSize/4;
+            }
+            if (this.direction == 'D') {
+                this.velocityX = 0;
+                this.velocityY = tileSize/4;
+            }
+            if (this.direction == 'L') {
+                this.velocityX = -tileSize/4;
+                this.velocityY = 0;
+            }
+            if (this.direction == 'R') {
+                this.velocityX = tileSize/4;
+                this.velocityY = 0;
+            } 
+        }
+
+        void reset() {
+            this.x = this.startX;
+            this.y = this.startY;
+        }
     }
-           private int rowCount = 21 ;
+
+       private int rowCount = 21 ;
        private int columnCount = 19 ;
        private int tileSize = 32;
        private int boardWidth = columnCount * tileSize;
@@ -100,8 +132,12 @@ Random random = new Random();
         pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
         loadMap();
-       }
-       public void loadMap() {
+        for (Block ghost:ghosts){
+            char newDirection = directions [random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
+    }
+     public void loadMap() {
         walls = new HashSet<Block>();
         foods = new HashSet<Block>();
         ghosts = new HashSet<Block>();
@@ -145,12 +181,42 @@ Random random = new Random();
             }
         }
     }
-    public void move() {
+     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
+    public void draw(Graphics g) {
+        g.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height,null);
+
+        for (Block ghost : ghosts){
+            g.drawImage(ghost.image, ghost.x, ghost.y, ghost.width, ghost.height,null);
+        }
+        for (Block wall : walls){
+            g.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height,null);
+        }
+        g.setColor(Color.white);
+        for (Block food : foods) {
+            g.fillRect(food.x, food.y, food.width, food.height);
+        }
+    }
+     public void move() {
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
+     }
+         public void resetPositions() {
+        pacman.reset();
+        pacman.velocityX = 0;
+        pacman.velocityY = 0;
+        for (Block ghost : ghosts) {
+            ghost.reset();
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
     }
     @Override
-    public void actionPerformed (ActionEvent e) {}
+    public void actionPerformed (ActionEvent e) {
+
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -160,6 +226,21 @@ Random random = new Random();
 
     @Override
     public void keyReleased(KeyEvent e) {
+
+        //System.out.println("KeyEvent: " + e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            pacman.updateDirection('U');
+        }
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            pacman.updateDirection('D');
+        }
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            pacman.updateDirection('L');
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            pacman.updateDirection('R');
+        }
+
         if(pacman.direction == 'U') {
             pacman.image = pacmanUpImage;
         }
@@ -173,4 +254,4 @@ Random random = new Random();
             pacman.image = pacmanRightImage;
         }
     }
-}    
+}
