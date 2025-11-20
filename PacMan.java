@@ -35,6 +35,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             updateVelocity();
             this.x += this.velocityX;
             this.y += this.velocityY;
+            for(Block wall : walls) {
+                if (collision (this, wall)) {
+                    this.x -= this.velocityX;
+                    this.y -= this.velocityY;
+                    this.direction = prevDirection;
+                    updateVelocity();
+                }
+            }
         }
         void updateVelocity() {
             if (this.direction == 'U') {
@@ -107,6 +115,10 @@ HashSet<Block> walls;
 HashSet<Block> foods;
 HashSet<Block> ghosts;
 Block pacman;
+int score = 0;
+int lives = 3;
+
+
 
 Timer gameLoop;
 char[] directions = {'U','D','L','R'};
@@ -137,7 +149,8 @@ Random random = new Random();
             ghost.updateDirection(newDirection);
         }
     }
-     public void loadMap() {
+
+       public void loadMap() {
         walls = new HashSet<Block>();
         foods = new HashSet<Block>();
         ghosts = new HashSet<Block>();
@@ -181,7 +194,7 @@ Random random = new Random();
             }
         }
     }
-     public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(g);
     }
@@ -195,15 +208,70 @@ Random random = new Random();
             g.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height,null);
         }
         g.setColor(Color.white);
-        for (Block food : foods) {
+        for (Block food : foods){
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+        //Score
     }
-     public void move() {
+
+    public void move() {
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
-     }
-         public void resetPositions() {
+
+        // check wall collisons
+        for (Block wall: walls) {
+            if (collision(pacman, wall)) {
+                pacman.x -= pacman.velocityX;
+                pacman.y -= pacman.velocityY;
+                break;
+            }
+        }
+        //check ghost collisions
+        for (Block ghost : ghosts) {
+            if (collision(ghost, pacman)) {
+                lives -= 1;
+                if (lives == 0) {
+                    return;
+                }
+                resetPositions();
+            }
+            if (ghost.y == tileSize*9 && ghost.direction != 'U' && ghost.direction != 'D') {
+                ghost.updateDirection('U');
+            }
+            ghost.x += ghost.velocityX;
+            ghost.y += ghost.velocityY;
+            for (Block wall: walls){
+                if (collision(ghost, wall)|| ghost.x <= 0 || ghost.x +ghost.width >= boardWidth) {
+                ghost.x -= ghost.velocityX;
+                ghost.y -= ghost.velocityY;
+                char newDirection = directions[random.nextInt(4)];
+                ghost.updateDirection(newDirection);
+                }
+            }
+        }
+        // check food collision
+        Block foodEaten = null;
+        for (Block food :foods) {
+            if (collision(pacman, food)) {
+                foodEaten = food;
+                score += 10;
+            }
+        }
+        foods.remove(foodEaten);
+        if (foods.isEmpty()) {
+            loadMap();
+            resetPositions();
+        }
+    }
+
+    public boolean collision( Block a, Block b) {
+        return a.x < b.x + b.width &&
+               a.x + a.width > b.x &&
+               a.y < b.y + b. height &&
+               a.y + a.height > b.y;
+    }
+
+    public void resetPositions() {
         pacman.reset();
         pacman.velocityX = 0;
         pacman.velocityY = 0;
@@ -226,7 +294,6 @@ Random random = new Random();
 
     @Override
     public void keyReleased(KeyEvent e) {
-
         //System.out.println("KeyEvent: " + e.getKeyCode());
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             pacman.updateDirection('U');
